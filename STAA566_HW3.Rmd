@@ -1,0 +1,65 @@
+---
+title: "STAA_566_Maps"
+author: "Manda Abhinay Reddy"
+output: html_document
+knit: (function(input_file, encoding) {
+  out_dir <- 'docs';
+  rmarkdown::render(input_file,
+ encoding=encoding,
+ output_file=file.path(dirname(input_file), out_dir, 'index.html'))})
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Here we are considering USArrests dataset from the ‘datasets’ package in R where the number of murders, arrests and rapes are taken per 100,000 population
+
+The spatial unit is entire geography of all the respective states from United States.
+
+The main motto of this study is to know which states contribute to high crime rate within US. Crimes are considered in terms of assault, murder and rape.
+
+Comparisons of different types of crimes with respect to each state are made and we can see that "Florida" is the state with highest assaults and murders. And when we it comes to 'rapes', Nevada is the highest.
+
+
+
+```{r}
+library(tidyverse)
+library(ggplot2)
+library(datasets)
+```
+
+```{r}
+
+states <- map_data("state")
+arrests <- USArrests
+names(arrests) <- tolower(names(arrests))
+arrests$region <- tolower(rownames(USArrests))
+
+choro <- merge(states, arrests, sort = FALSE, by = "region")
+choro <- choro[order(choro$order), ]
+
+region.lab.data <- states %>%
+  group_by(region) %>%
+  summarise(long = mean(long), lat = mean(lat))
+
+ggplot(choro, aes(long, lat)) +
+  geom_polygon(aes(group = group, fill = assault))+geom_text(aes(label = region), data = region.lab.data,size = 2, hjust = 0.5)
+
+```
+
+```{r}
+ggplot(choro, aes(long, lat)) +
+  geom_polygon(aes(group = group, fill = murder),color = "black")+scale_fill_gradient(low = "yellow", high = "Red")+geom_text(aes(label = region), data = region.lab.data,size = 2, hjust = 0.5)
+
+```
+
+```{r}
+
+ggplot(choro, aes(long, lat)) +
+  geom_polygon(aes(group = group, fill = rape),color="white")+scale_fill_gradient(low = "blue", high = "red")+geom_text(aes(label = region), data = region.lab.data,size = 2, hjust = 0.5)
+```
+
+
+
+
